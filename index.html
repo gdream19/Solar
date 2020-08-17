@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, user-scalable=no">
+    
+    <script src = "Chart.min.js"></script>
+    <script src = "utils.js"></script>
+    <link rel = "stylesheet" href = "Chart.min.css">
+  
+    <title>SOLAR MONITOR</title>
+
+    <!--Initial-->
+    <style>
+        * {margin: 0; padding: 0;}
+        body {font-family: Arial, Helvetica, sans-serif;}
+        li {list-style: none;}
+        a {text-decoration: none;}
+    </style>
+
+    <!--Header-->
+    <style>
+        #main_header{
+            height: 45px;           
+
+            position: relative;
+            text-align: center;
+            line-height: 45px;
+        }
+
+        #main_header>h1{
+            color:navy;
+        }       
+
+    </style>
+    
+    <!--navigation 1-->
+    <style>
+        #top_gnb{
+            overflow: hidden;
+            border-bottom: 1px solid black;
+            background: #B42111;
+        }
+        #top_gnb>div>a{            
+             /* 수평정렬 */
+            float: left; width: 25%;
+
+            /* 크기 색상, 정렬 */
+            height: 35px;
+            line-height: 35px;
+            text-align: center;
+            color: white;
+        }
+    </style>
+
+    <!--navigation 2-->
+    <style>
+        #bottom_gnb {
+            display: table;
+            width: 100%;
+            border-bottom: 1px solid black;
+        }
+
+        #bottom_gnb > div {
+            display:table-cell;
+            position: relative;
+        }
+
+        #bottom_gnb > div > a {
+            display: block;
+            height: 35px;
+            line-height: 35px;
+            text-align: center;
+        }
+
+        #bottom_gnb > div > a::before {
+            display: block;
+            position: absolute;
+            top: 9px; left: -1px;
+            width: 1px; height: 15px;
+            border-left: 1px solid black;
+            content: '';
+        }
+    </style>
+
+    <!--main body-->
+    <style>
+        #container_canvas{
+            width: 80%;
+            text-align: center;   
+            padding: 0;
+            margin: auto;
+            display: block;           
+        }
+        #container_canvas>canvas{       
+            -moz-user-select: none;
+            -webkit-user-select: none;
+            -ms-user-select: none;       
+        }
+
+    </style>
+
+    <!--footer-->
+    <style></style>
+</head>
+
+<body>   
+    <div id = "wrap">
+        <header id = "main_header">            
+            <h1>태양광 모니터</h1>
+        </header>
+       
+        <nav id = "top_gnb">
+            <div><a href="#" onclick="set_config()">설정</a></div>            
+            <div><a href="#">에러</a></div>
+            <div><a href="#">효율</a></div>
+            <div><a href="#">지구</a></div>
+        </nav>
+
+        <nav id = "bottom_gnb">
+            <div><a id = "daily" href = "#">일간</a></div>
+            <div><a id = "weekly" href = "#">주간</a></div>
+            <div><a href = "#">월간</a></div>
+            <div><a href = "#">연간</a></div>
+            <div><a href = "#">전체</a></div>
+        </nav>
+
+        <div id="container_canvas">
+            <canvas id="canvas"></canvas>
+        </div>
+
+    </div>
+
+   
+
+    <script>
+		var MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+		var color = Chart.helpers.color;
+		var barChartData = {
+			labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
+			datasets: [{
+				label: '발전양',
+				backgroundColor: color(window.chartColors.red).alpha(0.5).rgbString(),
+				borderColor: window.chartColors.red,
+				borderWidth: 1,
+				data: [
+					randomScalingFactor(),
+					randomScalingFactor(),
+					randomScalingFactor(),
+					randomScalingFactor(),
+					randomScalingFactor(),
+					randomScalingFactor(),
+					randomScalingFactor()
+				]
+			}, {
+				label: '일간최대',
+				backgroundColor: color(window.chartColors.blue).alpha(0.5).rgbString(),
+				borderColor: window.chartColors.blue,
+				borderWidth: 1,
+				data: [
+					randomScalingFactor(),
+					randomScalingFactor(),
+					randomScalingFactor(),
+					randomScalingFactor(),
+					randomScalingFactor(),
+					randomScalingFactor(),
+					randomScalingFactor()
+				]
+			}]
+
+		};
+
+		window.onload = function() {
+			var ctx = document.getElementById('canvas').getContext('2d');
+			window.myBar = new Chart(ctx, {
+				type: 'bar',
+				data: barChartData,
+				options: {
+					responsive: true,
+					legend: {
+						position: 'top',
+					},
+					title: {
+						display: true,
+						text: ''
+					}
+				}
+			});
+
+		};
+
+        // randomize data
+		document.getElementById('weekly').addEventListener('click', function() {
+			var zero = Math.random() < 0.2 ? true : false;
+			barChartData.datasets.forEach(function(dataset) {
+				dataset.data = dataset.data.map(function() {
+					return zero ? 0.0 : randomScalingFactor();
+				});
+
+			});
+			window.myBar.update();
+		});
+
+        // add dataset
+		var colorNames = Object.keys(window.chartColors);
+		document.getElementById('daily').addEventListener('click', function() {
+			var colorName = colorNames[barChartData.datasets.length % colorNames.length];
+			var dsColor = window.chartColors[colorName];
+			var newDataset = {
+				label: 'Dataset ' + (barChartData.datasets.length + 1),
+				backgroundColor: color(dsColor).alpha(0.5).rgbString(),
+				borderColor: dsColor,
+				borderWidth: 1,
+				data: []
+			};
+
+			for (var index = 0; index < barChartData.labels.length; ++index) {
+				newDataset.data.push(randomScalingFactor());
+			}
+
+			barChartData.datasets.push(newDataset);
+			window.myBar.update();
+		});
+
+        // add data
+		document.getElementById('weekly').addEventListener('click', function() {
+			if (barChartData.datasets.length > 0) {
+				var month = MONTHS[barChartData.labels.length % MONTHS.length];
+				barChartData.labels.push(month);
+
+				for (var index = 0; index < barChartData.datasets.length; ++index) {
+					// window.myBar.addData(randomScalingFactor(), index);
+					barChartData.datasets[index].data.push(randomScalingFactor());
+				}
+
+				window.myBar.update();
+			}
+		});
+
+        // remove Dataset
+		document.getElementById('weekly').addEventListener('click', function() {
+			barChartData.datasets.pop();
+			window.myBar.update();
+		});
+
+        // remove Data
+		document.getElementById('weekly').addEventListener('click', function() {
+			barChartData.labels.splice(-1, 1); // remove the label first
+
+			barChartData.datasets.forEach(function(dataset) {
+				dataset.data.pop();
+			});
+
+			window.myBar.update();
+		});
+	</script>
+
+
+    <script>
+    
+        function set_config(){
+			alert("Set Config");
+            fetch("/set_config")
+			.then(response=> response.text())
+			.then(data=> {
+				//console.log(data);
+				let result = document.querySelector("#message");
+				if(data == "ok"){
+					result.innerHTML = "<h1>MOVE FORWARD</h1>";
+				}
+				else{
+					result.innerHTML = "<h1>error</h1>";
+				}
+			});
+		}
+    </script>
+    
+</body>
+</html>
