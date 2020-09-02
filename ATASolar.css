@@ -92,3 +92,10 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#b4ddb4', end
 .r3_span2{float: left; width: 100px; margin-left: 10px; margin-right: 10px;}
 
 .r1_span1, .r1_span2, .r2_span1, .r2_span2, .r3_span1, .r3_span2{line-height: 100px;}
+
+#main_footer{
+    margin-top: 20px;
+    padding: 10px;
+    border-top: 3px solid black;
+    text-align: center;
+}
